@@ -10,12 +10,8 @@ class UserController {
 
     async create(option) {
         try {
-            const findUser = await UserModel.findOne({email:option.email});
-            if(findUser) {
-                let errorMessage = new Error("Email Already exits");
-                    errorMessage.code = 403;
-                throw errorMessage;
-            }
+            
+         
             let password = await this.hashingPassword(option.password);
             console.log('password',password)
             option.password = password;
@@ -29,7 +25,7 @@ class UserController {
                         access_token: accessToken
                     }
                 });
-                return {id: user._id,email:user.email,name:user.name,phone:user.phone,accessToken: accessToken};
+                return {userId: user._id,email:user.email,name:user.name,phone:user.phone,accessToken: accessToken};
             }
         } catch (error) {
             let errorMessage = new Error(error.message);
@@ -37,15 +33,14 @@ class UserController {
             throw errorMessage;
         }
     }
-
-    async login (option) {
+ 
+    async authenticate  (option) {
         try {
             let user = await UserModel.findOne({email:option.email});
             if(!user)
             {
-                let errorMessage = new Error("Email doesn't exits");
-                    errorMessage.code = 404;
-                throw errorMessage;
+                let newuser = await this.create(option);
+                return newuser;
             }
             let checkPassword = await bcrypt.compare(option.password,user.password);
             if(!checkPassword)
@@ -61,6 +56,7 @@ class UserController {
                 }
             });
             return {accessToken: accessToken};
+
         } catch (error) {
             let errorMessage = new Error(error.message);
                 errorMessage.code = (error.code) ? error.code : 400;
@@ -82,6 +78,47 @@ class UserController {
     {
         let new_id = id+''+Date.now();
         return crypto.createHash("sha256").update(new_id).digest('hex');
+    }
+
+    async followUsers(user,followId) {
+        try {
+            const checkUser = await UserModel.findOne({_id:followId});
+            if(!checkUser) {
+                let errorMessage = new Error("Follow user not found");
+                    errorMessage.code = (error.code) ? error.code : 400;
+                throw errorMessage;
+            }
+            if(!user.follow.includes(checkUser._id)) {
+               return await UserModel.updateOne({_id: user._id},{ $push: { follow: checkUser._id } });
+            }
+            return user;
+        } catch (error) {
+            let errorMessage = new Error(error.message);
+                errorMessage.code = (error.code) ? error.code : 400;
+            throw errorMessage;
+        }
+    }
+
+    async unfollowUsers(user,followId) {
+        try {
+            console.log('--user---',user)
+            console.log('---follow--',followId);
+            const checkUser = await UserModel.findOne({_id:followId});
+            console.log('---check--',checkUser)
+            if(!checkUser) {
+                let errorMessage = new Error("Follow user not found");
+                    errorMessage.code = (error.code) ? error.code : 400;
+                throw errorMessage;
+            }
+            if(user.follow.includes(checkUser._id)) {
+               return await UserModel.updateOne({_id: user._id},{ $pull: { follow: checkUser._id } });
+            }
+            return user;
+        } catch (error) {
+            let errorMessage = new Error(error.message);
+                errorMessage.code = (error.code) ? error.code : 400;
+            throw errorMessage;
+        }
     }
 }
 

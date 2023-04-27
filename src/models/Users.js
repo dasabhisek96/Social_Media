@@ -10,7 +10,7 @@ const RoleSchema = new mongoose.Schema({
 })
 
 const UserSchema = new mongoose.Schema({
-    name:{
+    username:{
         type: String
     },
     email:{
@@ -30,44 +30,25 @@ const UserSchema = new mongoose.Schema({
     access_token:{
         type: String,
     },
-    followers: {
+    
+    follow: {
         type: Array,
         default: [],
       },
-    followings: {
-        type: Array,
-        default: [],
-      },
+   
     Title:{
         type:String
     },
-    userId: {
-        type: String,
-        required: true,
-      },
-      desc: {
-        type: String,
-        max: 500,
-      },
-      img: {
-        type: String,
-      },
-      likes: {
-        type: Array,
-        default: [],
-      },
-      unlikes:{
-        type: Array,
-        default:[]
-      },
-      createdAt: {
+
+    createdAt: {
         type: Date,
         default: Date.now,
       },
-      comments:{
+    comments:{
         type:String,
         require: true,
-      }
+    }
+      
 },{
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
