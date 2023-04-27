@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 module.exports = async () => {
     try {
-        await mongoose.connect('mongodb://127.0.0.1:27017/socialmedia', {
+        await mongoose.connect(process.env.MONGOURL, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
